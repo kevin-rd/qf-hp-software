@@ -10,7 +10,7 @@ extern "C"
 #include <stdint.h>
 #include <stdio.h>
 
-#define UART_CMD_MAX_LEN 24 // 单个指令最大长度
+#define UART_CMD_MAX_LEN 36 // 单个指令最大长度
 
     /**
      * @brief 从串口接收到的字节推到库里

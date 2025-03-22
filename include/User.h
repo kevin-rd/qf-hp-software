@@ -26,7 +26,7 @@
 #include "key_value_transation.h"
 #include "beat_task.h"
 
-#define HP_SOFTWARE_VERSION "1.68" // 1.67
-#define JUST_OTA 1                // 0:重装所有数据升级 1:仅OTA更新保留数据
+#define HP_SOFTWARE_VERSION "2.2" // 1.67
+#define JUST_OTA 0                // 0:重装所有数据升级 1:仅OTA更新保留数据
 
 #endif

@@ -10,7 +10,7 @@ PWM pwm;
 uint8_t count = 0;
 
 float ek[3] = {0, 0, 0};
-float kpv = kp, kiv = ki, kdv = kd, kiv_high = ki_high;
+float kpv, kiv, kdv, kiv_high;
 
 PWM::PWM()
 {
@@ -29,8 +29,15 @@ void pwm_irq()
         digitalWrite(PWM_IO, LOW);
 }
 
+void PWM_PID_SYNC()
+{
+    kpv = user_datas.kp, kiv = user_datas.ki, kdv = user_datas.kd, kiv_high = user_datas.kih;
+}
+
 void PWM::begin()
 {
+    kpv = user_datas.kp, kiv = user_datas.ki, kdv = user_datas.kd, kiv_high = user_datas.kih;
+
     if (user_datas.pwm_temp_mode == Co_Temp)
         temp_time_buf = user_datas.pwm_temp_mode1_time;
     else
@@ -84,7 +91,7 @@ void PWM::temp_set()
         need_set_temp = user_datas.pwm_temp_buf;                                  // 设定恒温值
         if (adc.now_temp >= user_datas.pwm_temp_buf && temp_reached_flg == false) // 到达指定温度
         {
-            if (ui.temp_time_switch_flg == false) // 切换显示剩余时间
+            if (ui.temp_time_switch_flg == false && user_datas.pwm_temp_mode1_time != 0) // 切换显示剩余时间
                 ui.temp_time_switch_flg = true;
         }
         if (temp_reached_flg == true && temp_time_buf == 0) // 倒计时结束
@@ -102,7 +109,7 @@ void PWM::temp_set()
     ek[1] = ek[0];
     ek[0] = need_set_temp - adc.now_temp;
 
-    if (adc.now_temp == 38)
+    if (user_datas.hardware_version == 0 && adc.now_temp == 38)
     {
         pwm_buf = need_set_temp;
     }

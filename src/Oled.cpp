@@ -5,8 +5,10 @@
 Oled oled;
 
 // 屏幕缓存定义  根据不同平台更改内存位置修饰符
-uint8_t Oled_GRAM[PAGE_SIZE][WIDTH];
-uint8_t Oled_roll_x[4] = {0, WIDTH, 0, PAGE_SIZE}; // 滚动显示边界设定，依次为左上角xy和右下角xy
+static uint8_t Oled_GRAM[PAGE_SIZE][WIDTH];
+static uint8_t Oled_roll_x[4] = {0, WIDTH, 0, PAGE_SIZE}; // 滚动显示边界设定，依次为左上角xy和右下角xy
+static char chinese_buffer[4] = {0, 0, 0, 0};
+static uint8_t chinese_buffer_count = 0;
 /*************************************
 以下两个函数请对应移植平台进行修改
 ***************************************/
@@ -396,6 +398,7 @@ void Oled::str(int16_t x, int16_t y, const void *chr, uint8_t Size, uint8_t mode
 {
   uint8_t csize;
   const char *p = (char *)chr;
+
   if (Size == 16)
   {
     csize = 8;
@@ -404,12 +407,29 @@ void Oled::str(int16_t x, int16_t y, const void *chr, uint8_t Size, uint8_t mode
   {
     return;
   }
+  chinese_buffer_count = 0;
   while (*p)
   {
     if ((y / 8) > (Oled_roll_x[2] + Oled_roll_x[3] - 1))
       return;
-    write_char(x, y, *p++, Size, mode);
-    x += csize;
+
+    if (*p >= 0x80)
+    {
+      chinese_buffer[chinese_buffer_count++] = *p;
+      if (chinese_buffer_count == 3)
+      {
+        chinese_buffer_count = 0;
+        chinese(x, y, (const char *)chinese_buffer, Size, mode, fill);
+        x += Size;
+      }
+    }
+    else
+    {
+      chinese_buffer_count = 0;
+      write_char(x, y, *p, Size, mode);
+      x += csize;
+    }
+    p++;
     if (x > Oled_roll_x[1] - 8)
     {
       if (fill)
@@ -424,6 +444,16 @@ void Oled::str(int16_t x, int16_t y, const void *chr, uint8_t Size, uint8_t mode
       }
     }
   }
+}
+
+void Oled::printf(int16_t x, int16_t y, uint8_t Size, uint8_t mode, uint8_t fill, const void *fmt, ...)
+{
+  char buf[128];
+  va_list ap;
+  va_start(ap, fmt);
+  vsnprintf(buf, sizeof(buf), (char *)fmt, ap);
+  va_end(ap);
+  str(x, y, buf, Size, mode, fill);
 }
 
 void Oled::refresh()
@@ -957,8 +987,9 @@ void Oled::BMP(int16_t x, int16_t y, const void *p, uint8_t mode)
 void Oled::BMP(int16_t y, const void *p)
 {
   const char *str = (char *)p;
-  BMP(str[0], y, str[1], str[2], str + 3, 1);
+  BMP(str[0], str[1] + y, str[2], str[3], str + 4, 1);
 }
+
 void Oled::BMP(int16_t x, int16_t y, const void *p)
 {
   const char *str = (char *)p;

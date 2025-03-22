@@ -2,6 +2,9 @@
 #define _ADC_H_
 
 #define switch_io 16
+#define CH2_IO 16
+#define CH1_IO 0
+
 #define channel_low_temp 0
 #define channel_high_temp 1
 
@@ -20,7 +23,7 @@ public:
     void get();
     void set_channel(bool channel);
     bool adc_max_temp_auto();
-    uint16_t now_temp = 38;
+    uint16_t now_temp = 0;
     uint16_t now_temp_high = 0;
     bool adc_get_temp_flg = 0;
     bool adc_max_temp_auto_flg = 1;
@@ -28,8 +31,8 @@ public:
 
 private:
     void get_voltage();
-    uint16_t adc_buf[8];
-    uint16_t adc_buf_high[8];
+    // uint16_t adc_buf[10];
+    // uint16_t adc_buf_high[10];
     uint16_t vol_low = 0;
     uint16_t vol_high = 0;
     int8_t adc_error = 0;

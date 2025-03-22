@@ -15,9 +15,11 @@ typedef enum
     fan_set_menu_num,        // 风扇设置
     enc_mode_menu_num,       // 旋转方向
     ui_style_menu_num,       // 界面风格
+    pid_menu_num,            // 参数整定
     use_menu_num,            // 使用说明
     resume_factory_menu_num, // 恢复出厂
     about_menu_num,          // 关于
+    back_menu_num,           // 返回
     page2_menu_num_max
 } page2_menu_num_type;
 
@@ -29,35 +31,37 @@ static int8_t page2_move_tmp = 0;
 static int8_t page2_move_flg = 0;
 static user_datas_t user_datas_tmp;
 
-const char *page2_str_ptr[2][12] = {
-    {
-        "温控模式",
-        "回流参数",
-        "恒温参数",
-        "温度校准",
-        "物联网",
-        "屏幕亮度",
-        "风扇设置",
-        "旋转方向",
-        "界面风格",
-        "使用说明",
-        "恢复出厂",
-        "关于",
-    },
-    {
-        "溫控模式",
-        "回流參數",
-        "恆溫參數",
-        "溫度校准",
-        "物聯網",
-        "屏幕亮度",
-        "風扇設置",
-        "旋轉方向",
-        "界面風格",
-        "使用說明",
-        "恢復出廠",
-        "關於",
-    }
+extern void PWM_PID_SYNC();
+
+const char *page2_str_ptr[2][14] = {
+    {"温控模式",
+     "回流参数",
+     "恒温参数",
+     "温度校准",
+     "物联网",
+     "屏幕亮度",
+     "风扇设置",
+     "旋转方向",
+     "界面风格",
+     "参数整定",
+     "使用说明",
+     "恢复出厂",
+     "关于",
+     "返回"},
+    {"溫控模式",
+     "回流參數",
+     "恆溫參數",
+     "溫度校准",
+     "物聯網",
+     "屏幕亮度",
+     "風扇設置",
+     "旋轉方向",
+     "界面風格",
+     "參數整定",
+     "使用說明",
+     "恢復出廠",
+     "關於",
+     "返回"}
 
 };
 
@@ -71,35 +75,40 @@ const unsigned char *page2_bmp_ptr[] = {
     page2_bmp_fan,
     page2_bmp_enc_rotation,
     page2_bmp_ui_style,
-    page2_bmp_about,
+    page2_bmp_pid,
+    page2_bmp_useinfo,
     page2_bmp_factory,
-    page2_bmp_setting,
-};
+    page2_bmp_about,
+    page2_bmp_back};
 /************************/
 
 /*设置页定义*/
 static int8_t page3_switch_flg = 0;
 
-static const char *menu0_option0[2] = {"回流焊模式", "回流焊模式"};
-static const char *menu0_option1[2] = {"恒温模式", "恆溫模式"};
+static const char *back_option[] = {"返回", "返回"};
 
-static const char *menu1_option0[2] = {"活性区", "活性區"};
-static const char *menu1_option1[2] = {"回流区", "回流區"};
-static const char *menu1_option_s[2] = {"秒", "秒"};
-static const char *menu1_option_t[2] = {"摄", "攝"};
-static int8_t temp_mode0_option = 0; // 回流曲线设置项 0：活性区温度 1：活性区时间 2：回流区温度 3：回流区时间
+static const char *menu0_option0[] = {"回流焊模式", "回流焊模式"};
+static const char *menu0_option1[] = {"恒温模式", "恆溫模式"};
+
+static const char *menu1_option0[] = {"活性区", "活性區"};
+static const char *menu1_option1[] = {"回流区", "回流區"};
+static const char *menu1_option_s[] = {"秒", "秒"};
+static const char *menu1_option_t[] = {"摄", "攝"};
+static int8_t temp_mode0_option = 0; // 回流曲线设置项 0：活性区温度 1：活性区时间 2：回流区温度 3：回流区时间, 4：保存 5：丢弃
 
 static const char *menu2_option0[] = {"分钟", "分鐘"};
 
-static const char *menu3_option0_0[] = {"单击开启", "單擊開啟"};
-static const char *menu3_option0_1[] = {"单击关闭", "單擊關閉"};
-static const char *menu3_option1_0[] = {"单击配置网络密匙", "單擊配置網絡密匙"};
+static const char *menu3_option0_0[] = {"功能已关闭", "功能已關閉"};
+static const char *menu3_option0_1[] = {"功能已开启", "功能已開啟"};
+static const char *menu3_option1_0[] = {"配置网络密匙", "配置網絡密匙"};
 static const char *menu3_option1_1[] = {"请连接至热点", "請鏈接至熱點"};
 static const char *menu3_option1_2[] = {"QF_HP", "QF_HP"};
 
 static const char *menu5_option0_0[] = {"旋钮需停在刻度上", "旋钮需停在刻度上"};
-static const char *menu6_option0_0[] = {"启凡科创智能物联网加热台", "汎用恆溫加熱台"};
-static const char *menu6_option0_1[] = {"V" HP_SOFTWARE_VERSION, "量產機", "02"};
+static const char *menu5_option0_1[] = {"只要微笑就好了", "只要微笑就好了"};
+
+static const char *menu6_option0_0[] = {"启凡科创QF-HP", "汎用恆溫加熱台"};
+static const char *menu6_option0_1[] = {"SV:" HP_SOFTWARE_VERSION " HV:%1d.0", "量產機", "02"};
 
 static const char *menu7_option0_0[] = {"标称温度", "標準溫度"};
 static const char *menu7_option0_1[] = {"自动校准", "自動校準"};
@@ -111,13 +120,18 @@ static const char *app_fan_option0_0[] = {"开启自动降温", "開啟自動降
 static const char *app_fan_option0_1[] = {"关闭自动降温", "關閉自動降溫"};
 
 static const char *app_factory_option0_0[] = {"恢复出厂设置", "恢復出廠設置"};
-static const char *app_factory_option0_1[] = {"返回菜单", "返回菜單"};
 
 static const char *app_enc_rotation_option0_0[] = {"正向滚动", "正向滾動"};
 static const char *app_enc_rotation_option0_1[] = {"反向滚动", "反向滾動"};
 
 static const char *app_ui_style_option0_0[] = {"官方默认风格"};
 static const char *app_ui_style_option0_1[] = {"找羊初號機"};
+
+static const char *app_pid_option0_0[] = {"比例系数P:%02.1f", "比例係數P:%02.1f"};
+static const char *app_pid_option0_1[] = {"低温积分I:%02.1f", "低溫積分I:%02.1f"};
+static const char *app_pid_option0_2[] = {"高温积分I:%02.1f", "高溫積分I:%02.1f"};
+static const char *app_pid_option0_3[] = {"微分系数D:%02.1f", "微分係數D:%02.1f"};
+static int8_t app_pid_option = 0; // 0: P 1: I 2: D
 
 /************************/
 
@@ -282,28 +296,40 @@ void UI::page2_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面2�
             ec11.speed_up(true);
             break;
         default:
+            if (page2_menu_num == back_menu_num)
+            {
+                switch_buf = back;
+                page_switch_flg = 1;
+                ec11.speed_up(true);
+                break;
+            }
+            ec11.double_click(false);
             switch_buf = sure;
             page_switch_flg = 1;
-            if (page2_menu_num == set_temp_time_menu_num || page2_menu_num == oled_light_menu_num || page2_menu_num == backflow_menu_num)
+            if (page2_menu_num == set_temp_time_menu_num || page2_menu_num == oled_light_menu_num || page2_menu_num == backflow_menu_num || page2_menu_num == pid_menu_num)
                 ec11.speed_up(true);
-            ec11.double_click(false);
+
             if (page2_menu_num == fan_set_menu_num)
                 set_var_tmp = user_datas.fan_auto_flg;
-            if (page2_menu_num == resume_factory_menu_num)
+            else if (page2_menu_num == resume_factory_menu_num)
                 set_var_tmp = 0;
-            if (page2_menu_num == enc_mode_menu_num)
+            else if (page2_menu_num == enc_mode_menu_num)
             {
                 if (user_datas.encoder_rotation == ENC_ROTATION_CW)
                     set_var_tmp = 1;
                 else
                     set_var_tmp = 0;
             }
-            if (page2_menu_num == ui_style_menu_num)
+            else if (page2_menu_num == ui_style_menu_num)
             {
                 if (user_datas.ui_style == UI_STYLE_QFTEK)
                     set_var_tmp = 1;
                 else
                     set_var_tmp = 0;
+            }
+            else if (page2_menu_num == pid_menu_num)
+            {
+                app_pid_option = 0;
             }
             user_datas_tmp = user_datas;
             break;
@@ -367,14 +393,18 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
             {
                 if (!page3_switch_flg)
                 {
-                    if (miot_option_buf)
+                    if (miot_option_buf == 1)
                     {
                         blinker_config_flg = 1;
                     }
-                    else
+                    else if (miot_option_buf == 0)
                     {
                         page3_switch_flg = 1;
                         user_datas.miot_miot_able = !user_datas.miot_miot_able;
+                    }
+                    else
+                    {
+                        page3_push_back();
                     }
                 }
                 return;
@@ -391,6 +421,8 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
                     error_temp_fix_page_buf = 0;
                     break;
                 case 2:
+                    if (user_datas.hardware_version == 1)
+                        break;
                     if (pwm.power == 0 && adc.now_temp < 150)
                     {
                         error_temp_fix_page_buf = 3;
@@ -398,6 +430,8 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
                     }
                     break;
                 default:
+                    if (user_datas.hardware_version == 1)
+                        break;
                     error_temp_fix_page_buf = 2;
                     error_temp_fix_page_move_buf = 2;
                     break;
@@ -449,6 +483,14 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
                     pwm.end();
                 page3_push_back();
                 return;
+            }
+
+            if (page2_menu_num == pid_menu_num)
+            {
+                app_pid_option++;
+                if (app_pid_option == 4)
+                    app_pid_option = 0;
+                page3_switch_flg++;
             }
 
             if (page2_menu_num == fan_set_menu_num ||
@@ -507,6 +549,8 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
     }
     // 编码器事件
 
+    float tmp_f = ec_value;
+
     switch (page2_menu_num)
     {
     case temp_mode_menu_num: // 温控模式
@@ -557,14 +601,20 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
     case set_temp_time_menu_num: // 恒温参数
         user_datas.pwm_temp_mode1_time += ec_value;
         if (user_datas.pwm_temp_mode1_time < 0)
-            user_datas.pwm_temp_mode1_time = 0;
-        else if (user_datas.pwm_temp_mode1_time > 999)
             user_datas.pwm_temp_mode1_time = 999;
+        else if (user_datas.pwm_temp_mode1_time > 999)
+            user_datas.pwm_temp_mode1_time = 0;
         break;
 
     case iot_menu_num: // iot
         if (!page3_switch_flg)
-            miot_option_buf = !miot_option_buf;
+        {
+            miot_option_buf += ec_value;
+            if (miot_option_buf < 0)
+                miot_option_buf = 2;
+            else if (miot_option_buf > 2)
+                miot_option_buf = 0;
+        }
         break;
 
     case oled_light_menu_num: // 屏幕亮度
@@ -596,11 +646,36 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
         circle_move_buf = set_var_tmp | 0x2;
         break;
 
+    case pid_menu_num:
+        if (!page3_switch_flg)
+        {
+
+            tmp_f /= 10;
+            if (app_pid_option == 0)
+            {
+                user_datas.kp += tmp_f;
+            }
+            else if (app_pid_option == 1)
+            {
+                user_datas.ki += tmp_f;
+            }
+            else if (app_pid_option == 2)
+            {
+                user_datas.kih += tmp_f;
+            }
+            else if (app_pid_option == 3)
+            {
+                user_datas.kd += tmp_f;
+            }
+            PWM_PID_SYNC();
+        }
+        break;
+
     case error_temp_fix_num: // 温度校准
         switch (error_temp_fix_page_buf)
         {
         case 0:
-            if (ec_value > 0)
+            if (user_datas.hardware_version == 0 && ec_value > 0)
             {
                 error_temp_fix_page_buf = 2;
                 error_temp_fix_page_move_buf = 1;
@@ -611,12 +686,12 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
             user_datas.adc_hotbed_max_temp += ec_value;
             if (user_datas.adc_hotbed_max_temp < 240)
                 user_datas.adc_hotbed_max_temp = 240;
-            else if (user_datas.adc_hotbed_max_temp > 270)
-                user_datas.adc_hotbed_max_temp = 270;
+            else if (user_datas.adc_hotbed_max_temp > 300)
+                user_datas.adc_hotbed_max_temp = 300;
         }
         break;
         case 2:
-            if (ec_value < 0)
+            if (user_datas.hardware_version == 0 && ec_value < 0)
             {
                 error_temp_fix_page_buf = 0;
                 error_temp_fix_page_move_buf = 1;
@@ -787,11 +862,20 @@ void UI::show_page(short x, short y, uint8_t page)
             oled.chinese(69, y, "恒温", 16, 1, 0);
         if (pwm.power)
             oled.BMP(95, y + 2, 32, 28, heating, 1);
+
+        if (pwm.get_fan_sta())
+        {
+            static uint8_t mode = 0;
+            mode++;
+            if (mode == 4)
+                mode = 0;
+            oled.BMP(y, bmp_fan[mode]);
+        }
         break;
     case 2:
 
         oled.xy_set(0, 0, 128, 4);
-        oled.chinese(64, y + 8, page2_str_ptr[user_datas.ui_style][page2_menu_num], 16, 1, 0);
+        oled.chinese(64 - 12, y + 8, page2_str_ptr[user_datas.ui_style][page2_menu_num], 16, 1, 0);
         oled.BMP(y, page2_bmp_ptr[page2_menu_num]);
         break;
     case 3:
@@ -815,24 +899,34 @@ void UI::show_page(short x, short y, uint8_t page)
             }
             break;
 
-        case set_temp_time_menu_num: // 恒温时长
-            ui.show_temp_mode = show_temp_mode1_time;
-            show_temp(12, y, 0, 0);
-            oled.chinese(84, y + 16, menu2_option0[user_datas.ui_style], 16, 1, 0);
-            ui.show_temp_mode = mode_tmp;
-            break;
-
-        case iot_menu_num: // 物联网
-            if (miot_option_buf)
+        case set_temp_time_menu_num:                 // 恒温时长
+            if (user_datas.pwm_temp_mode1_time == 0) // 无限时长
             {
-                oled.chinese(0, y + 8, menu3_option1_0[user_datas.ui_style], 16, 1, 0);
+                oled.BMP(y, bmp_infinite);
             }
             else
             {
+                ui.show_temp_mode = show_temp_mode1_time;
+                show_temp(12, y, 0, 0);
+                oled.chinese(84, y + 16, menu2_option0[user_datas.ui_style], 16, 1, 0);
+                ui.show_temp_mode = mode_tmp;
+            }
+            break;
+        case iot_menu_num: // 物联网
+            if (miot_option_buf == 1)
+            {
+                oled.chinese(16, y + 8, menu3_option1_0[user_datas.ui_style], 16, 1, 0);
+            }
+            else if (miot_option_buf == 0)
+            {
                 if (user_datas.miot_miot_able)
-                    oled.chinese(32, y + 8, menu3_option0_1[user_datas.ui_style], 16, 1, 0);
+                    oled.chinese(24, y + 8, menu3_option0_1[user_datas.ui_style], 16, 1, 0);
                 else
-                    oled.chinese(32, y + 8, menu3_option0_0[user_datas.ui_style], 16, 1, 0);
+                    oled.chinese(24, y + 8, menu3_option0_0[user_datas.ui_style], 16, 1, 0);
+            }
+            else
+            {
+                oled.chinese(48, y + 8, back_option[user_datas.ui_style], 16, 1, 0);
             }
             break;
 
@@ -843,10 +937,22 @@ void UI::show_page(short x, short y, uint8_t page)
             break;
 
         case use_menu_num: // 使用说明
-            if (user_datas.ui_style)
-                oled.chinese(8, y + 10, menu5_option0_0[user_datas.ui_style], 16, 1, 0);
+
+            if (user_datas.hardware_version == 0)
+            {
+                if (user_datas.ui_style)
+                    oled.chinese(0, y + 8, menu5_option0_0[user_datas.ui_style], 16, 1, 0);
+                else
+                    oled.chinese(0, y + 8, menu5_option0_0[user_datas.ui_style], 16, 1, 0);
+            }
             else
-                oled.chinese(0, y + 8, menu5_option0_0[user_datas.ui_style], 16, 1, 0);
+            {
+                if (user_datas.ui_style)
+                    oled.chinese(8, y + 8, menu5_option0_1[user_datas.ui_style], 16, 1, 0);
+                else
+                    oled.chinese(8, y + 8, menu5_option0_1[user_datas.ui_style], 16, 1, 0);
+            }
+
             break;
 
         case fan_set_menu_num: // 风扇设置
@@ -860,7 +966,7 @@ void UI::show_page(short x, short y, uint8_t page)
 
         case resume_factory_menu_num: // 恢复出厂设置
             oled.chinese(0, y, app_factory_option0_0[user_datas.ui_style], 16, 1, 0);
-            oled.chinese(0, y + 16, app_factory_option0_1[user_datas.ui_style], 16, 1, 0);
+            oled.chinese(0, y + 16, back_option[user_datas.ui_style], 16, 1, 0);
             if (set_var_tmp == 1)
                 oled.BMP(118, y + 4, circle_kong);
             else
@@ -885,6 +991,25 @@ void UI::show_page(short x, short y, uint8_t page)
                 oled.BMP(118, y + 20, circle_kong);
             break;
 
+        case pid_menu_num: // PID参数
+            if (app_pid_option == 0)
+            {
+                oled.printf(8, y + 8, 16, 1, 0, app_pid_option0_0[user_datas.ui_style], user_datas.kp);
+            }
+            else if (app_pid_option == 1)
+            {
+                oled.printf(8, y + 8, 16, 1, 0, app_pid_option0_1[user_datas.ui_style], user_datas.ki);
+            }
+            else if (app_pid_option == 2)
+            {
+                oled.printf(8, y + 8, 16, 1, 0, app_pid_option0_2[user_datas.ui_style], user_datas.kih);
+            }
+            else if (app_pid_option == 3)
+            {
+                oled.printf(8, y + 8, 16, 1, 0, app_pid_option0_3[user_datas.ui_style], user_datas.kd);
+            }
+            break;
+
         case about_menu_num: // 关于
             if (user_datas.ui_style)
             {
@@ -894,27 +1019,39 @@ void UI::show_page(short x, short y, uint8_t page)
             }
             else
             {
-                oled.chinese(0, y, menu6_option0_0[user_datas.ui_style], 16, 1, 1);
-                oled.str(88, y + 16, menu6_option0_1[user_datas.ui_style], 16, 1, 0);
+                oled.str(12, y, menu6_option0_0[user_datas.ui_style], 16, 1, 0); // 启凡科创
+                oled.printf(12, y+16, 16, 1, 0, menu6_option0_1[user_datas.ui_style], user_datas.hardware_version + 1);
             }
             break;
 
         case error_temp_fix_num: // 温度校准
 
-            oled.chinese(0, y, menu7_option0_0[user_datas.ui_style], 16, 1, 1);
-            oled.chinese(0, y + 16, menu7_option0_1[user_datas.ui_style], 16, 1, 1);
-            oled.str(64, y, menu7_option0_2[user_datas.ui_style], 16, 1, 0);
-            oled.str(64, y + 16, menu7_option0_2[user_datas.ui_style], 16, 1, 0);
-            oled.num(72, y, user_datas.adc_hotbed_max_temp, 3, 16, LEFT, 1);
-            oled.num(72, y + 16, user_datas.adc_adc_max_temp, 3, 16, LEFT, 1);
+            if (user_datas.hardware_version == 0)
+            {
+                oled.chinese(0, y, menu7_option0_0[user_datas.ui_style], 16, 1, 1);
+                oled.str(64, y, menu7_option0_2[user_datas.ui_style], 16, 1, 0);
+                oled.num(72, y, user_datas.adc_hotbed_max_temp, 3, 16, LEFT, 1);
+                oled.chinese(0, y + 16, menu7_option0_1[user_datas.ui_style], 16, 1, 1);
+                oled.str(64, y + 16, menu7_option0_2[user_datas.ui_style], 16, 1, 0);
+                oled.num(72, y + 16, user_datas.adc_adc_max_temp, 3, 16, LEFT, 1);
+            }
+            else
+            {
+                oled.chinese(0, y + 8, menu7_option0_0[user_datas.ui_style], 16, 1, 1);
+                oled.str(64, y + 8, menu7_option0_2[user_datas.ui_style], 16, 1, 0);
+                oled.num(72, y + 8, user_datas.adc_hotbed_max_temp, 3, 16, LEFT, 1);
+            }
+
+            uint8_t add = user_datas.hardware_version * 8;
 
             switch (error_temp_fix_page_buf)
             {
             case 0:
-                oled.BMP(118, y + 4, circle_kong);
+
+                oled.BMP(118, y + 4 + add, circle_kong);
                 break;
             case 1:
-                oled.BMP(118, y + 4, circle_shi);
+                oled.BMP(118, y + 4 + add, circle_shi);
                 break;
             default:
                 oled.BMP(118, y + 20, circle_kong);
@@ -1035,10 +1172,10 @@ void UI::page2_move()
         if (now_y < -32 || now_y > 32)
             break;
         oled.clr();
-        oled.chinese(64, now_y + 8, page2_str_ptr[user_datas.ui_style][page2_menu_num], 16, 1, 0);
+        oled.chinese(64 - 12, now_y + 8, page2_str_ptr[user_datas.ui_style][page2_menu_num], 16, 1, 0);
         oled.BMP(now_y, page2_bmp_ptr[page2_menu_num]);
 
-        oled.chinese(64, next_y + 8, page2_str_ptr[user_datas.ui_style][num_tmp], 16, 1, 0);
+        oled.chinese(64 - 12, next_y + 8, page2_str_ptr[user_datas.ui_style][num_tmp], 16, 1, 0);
         oled.BMP(next_y, page2_bmp_ptr[num_tmp]);
 
         oled.refresh();
@@ -1279,7 +1416,7 @@ void UI::show_temp(int8_t x, int8_t y, int8_t xx, int8_t yy)
     if (show_temp_mode == show_now_temp)
     {
         tmp = adc.now_temp;
-        if (adc.now_temp <= 38)
+        if (user_datas.hardware_version == 0 && adc.now_temp <= 38)
             oled.BMP(x + 2, y, less);
     }
     else if (show_temp_mode == show_set_temp)

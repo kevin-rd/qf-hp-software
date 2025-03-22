@@ -1,5 +1,9 @@
 #include "eeprom_flash.h"
 #include "User.h"
+#include "PID.h"
+#include "qf_key_chek.h"
+extern void get_mac(uint8_t *mac_ret);
+extern void get_sn(uint8_t *sn_ret);
 
 eeprom_flash eeprom;
 
@@ -7,21 +11,7 @@ void eeprom_flash::data_init()
 {
     // EEPROM初始化数据
 
-    user_datas.pwm_temp_buf = 100;
-    user_datas.pwm_temp_mode = 0;
-    user_datas.miot_miot_able = 0;
-    user_datas.pwm_temp_mode1_time = 10;
-    user_datas.ui_oled_light = 127;
-    user_datas.adc_adc_max_temp = 255;
-    user_datas.adc_hotbed_max_temp = 255;
-    user_datas.fan_auto_flg = 1;
-    memset(user_datas.blinker_id, 0, sizeof(user_datas.blinker_id));
-    user_datas.curve_temp_buf[0] = 140;
-    user_datas.curve_temp_buf[1] = 90;
-    user_datas.curve_temp_buf[2] = 255;
-    user_datas.curve_temp_buf[3] = 60;
-    user_datas.ui_style = UI_STYLE_QFTEK;
-    user_datas.encoder_rotation = ENC_ROTATION_CW;
+    user_datas_init();
 
     write_flg = 2;
 
@@ -40,6 +30,22 @@ void eeprom_flash::resume_factory()
     ESP.restart();
 }
 
+uint8_t eeprom_flash::userdata_updata_user_key(uint8_t *sn)
+{
+    uint8_t mac[6];
+    uint8_t key[6];
+    get_mac(mac);
+    qf_pass_key_get(mac, key, 6);
+
+    if (memcmp(sn, key, sizeof(key)))
+        return 0;
+
+    memcpy(user_datas.key, sn, sizeof(user_datas.key));
+    write_flg = 2;
+    write_task();
+    return 1;
+}
+
 void eeprom_flash::read_all_data()
 {
 
@@ -48,6 +54,8 @@ void eeprom_flash::read_all_data()
     if (EEPROM.read(eeprom_write_add) != ee_head_0 || EEPROM.read(eeprom_write_add + 1) != ee_head_1)
     {
         data_init();
+        write_bytes(eeprom_write_add + 2, &user_datas, sizeof(user_datas));
+        EEPROM.commit();
     }
     else
     {
@@ -56,7 +64,6 @@ void eeprom_flash::read_all_data()
         Serial.println(user_datas.blinker_id);
     }
 
-    EEPROM.commit();
     EEPROM.end();
 
     ec11.int_work();

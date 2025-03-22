@@ -1,16 +1,11 @@
 #include "set_wifi.h"
 #include "ui.h"
 #include "User.h"
+#include "user_datas.h"
 
 set_wifi setwifi;
 
-#if compile_style
-const char conect_wifi0[] = "啟動";
-const char conect_wifi1[] = "AT";
-const char conect_wifi2[] = "力場";
-#else
-const char conect_wifi[] = "连接至网络";
-#endif
+const char conect_wifi[][16] = {"连接至网络", "啟動AT力場"};
 
 bool set_wifi::power_on_conect()
 {
@@ -21,13 +16,8 @@ bool set_wifi::power_on_conect()
   for (x = 32; x > 7; x--)
   {
     oled.choose_clr(12, 0, 104, 4);
-#if compile_style
-    oled.chinese(12, x, conect_wifi0, 16, 1, 1);
-    oled.str(44, x, conect_wifi1, 16, 1, 1);
-    oled.chinese(60, x, conect_wifi2, 16, 1, 0);
-#else
-    oled.chinese(12, x, conect_wifi, 16, 1, 0);
-#endif
+
+    oled.str(12, x, conect_wifi[user_datas.ui_style], 16, 1, 0);
 
     oled.choose_refresh(12, 0, 104, 4);
     yield();
@@ -72,31 +62,27 @@ bool set_wifi::power_on_conect()
   for (x = 32; x > 7; x--)
   {
     oled.choose_clr(8, 0, 120, 4);
-#if compile_style
-    oled.chinese(12, x - 24, conect_wifi0, 16, 1, 1);
-    oled.str(44, x - 24, conect_wifi1, 16, 1, 1);
-    oled.chinese(60, x - 24, conect_wifi2, 16, 1, 0);
-#else
-    oled.chinese(12, x - 24, conect_wifi, 16, 1, 0);
-#endif
+    oled.str(12, x, conect_wifi[user_datas.ui_style], 16, 1, 0);
     if (buf)
     {
-#if compile_style
-      oled.str(24, x, "AT", 16, 1, 1);
-      oled.chinese(40, x, "力場全开", 16, 1, 0);
-#else
-      oled.chinese(48, x, "搞定", 16, 1, 0);
-#endif
-    }
 
+      if (user_datas.ui_style == UI_STYLE_ZHAOYANG)
+      {
+        oled.str(24, x, "AT", 16, 1, 1);
+        oled.chinese(40, x, "力場全开", 16, 1, 0);
+      }
+      else
+        oled.chinese(48, x, "搞定", 16, 1, 0);
+    }
     else
     {
-#if compile_style
-      oled.str(8, x, "AT", 16, 1, 1);
-      oled.chinese(24, x, "力場啟動失败", 16, 1, 0);
-#else
-      oled.chinese(48, x, "失败", 16, 1, 0);
-#endif
+      if (user_datas.ui_style == UI_STYLE_ZHAOYANG)
+      {
+        oled.str(8, x, "AT", 16, 1, 1);
+        oled.chinese(24, x, "力場啟動失败", 16, 1, 0);
+      }
+      else
+        oled.chinese(48, x, "失败", 16, 1, 0);
     }
 
     oled.choose_refresh(8, 0, 120, 4);

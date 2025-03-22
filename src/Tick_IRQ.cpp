@@ -48,7 +48,7 @@ void s1_tic()
   adc.get_temp_task(); // 更新温度
   pwm.temp_set();      // 输出pwm
 
-  if (adc.now_temp == 38 && !pwm.power) // 未开启加热温度最低
+  if (adc.now_temp <= 38 && !pwm.power) // 未开启加热温度最低
   {
     if (pwm.get_fan_sta() == 1 && user_datas.fan_auto_flg == 1) // 自动关闭风扇开启
       pwm.fan(0);                                               // 关闭风扇
@@ -116,7 +116,7 @@ void s1_tic()
   }
   else if (backflow_sta == backflow_uping)
   {
-    
+
     if (user_datas.curve_temp_buf[2] < 217)
       tmp = (user_datas.curve_temp_buf[2] - user_datas.curve_temp_buf[0]) * 10 / 25;
     else
@@ -188,7 +188,11 @@ void Ticker_init()
 {
   ticker25ms.attach_ms(25, ms25_tic);
   ticker100_ms.attach_ms(100, ms100_tic);
-  ticker50_ms.attach_ms(50, ms50_tic);
+
+  if (user_datas.hardware_version == 0)
+    ticker50_ms.attach_ms(50, ms50_tic);
+  else
+    ticker50_ms.attach_ms(33, ms50_tic);
 
   ticker1s.attach(1, s1_tic);
 }

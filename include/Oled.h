@@ -111,6 +111,8 @@ public:
   // 写字符串,size:8/16,mode 0:白底黑字/1：黑底白字,fill:1:多余自动换行 0:多余不显示,x分辨率为1/y为1
   void str(int16_t x, int16_t y, const void *chr, uint8_t Size, uint8_t mode, uint8_t fill);
 
+  void printf(int16_t x, int16_t y, uint8_t Size, uint8_t mode, uint8_t fill, const void *fmt, ...);
+
   /*num最大为±2^31，显示指定位数（len)的整数,size:8/16,返回实际显示了多少位,align为对齐方式，左对齐或右对齐，对齐参数如下：
     LEFT
     RIGHT  */
@@ -132,12 +134,11 @@ public:
 
   /**
    * @brief 在Y位置显示BMP位图，X的位置由BMP数组的第一个字节确定，宽高由第2、3个字节确定
-   * 
+   *
    * @param y Y轴
    * @param p 数组
    */
   void BMP(int16_t y, const void *p);
-
   /*
     xy为左上角位置,自动识别BMP位图长宽显示（需在取模后数组开头分别添加宽度、高度两个数值）
     XY可以是负数,任意边超出部分自动去除,mode:0反色/1不反色

@@ -33,9 +33,13 @@ typedef struct
     uint8_t fan_auto_flg : 1;     // 自动风扇是否开启
     uint8_t ui_style : 2;         // UI风格,ui_style_t
     uint8_t encoder_rotation : 1; // 编码器旋转方向,enc_rotation_t
-    uint8_t pwm_temp_mode;        // 温控模式，0：回流模式，1：恒温模式,temp_mode_t
-    bool miot_miot_able;          // 物联网功能使能
+    uint8_t pwm_temp_mode : 1;    // 温控模式，0：回流模式，1：恒温模式,temp_mode_t
+    uint8_t miot_miot_able : 1;   // 物联网功能使能
+    uint8_t hardware_version : 1; // 硬件版本
+    uint8_t reversed : 1;         // 保留
     char blinker_id[13];          // 点灯密匙
+    uint8_t key[6];               // 密匙
+    float kp, ki, kd, kih;        // pid参数
 } user_datas_t;
 
 // uint16_t x = sizeof(user_datas_t);

@@ -1,8 +1,18 @@
 
 #include "User.h"
 #include "uart_cmd.h"
+#include "eeprom_flash.h"
 
 extern float kpv, kiv, kdv, kiv_high;
+extern void get_mac(uint8_t *mac_ret);
+extern void get_sn(uint8_t *sn_ret);
+
+static void char_to_sn_hex(uint8_t *sn, uint8_t hex, uint8_t cnt)
+{
+    if ((cnt & 1) == 0)
+        hex <<= 4;
+    sn[cnt / 2] |= hex;
+}
 
 static uint16_t get_num_int(const char *str)
 {
@@ -54,10 +64,10 @@ void uart_app_handler()
 {
     if (uart_cmd_available())
     {
+        uint8_t buf[64];
         /// cmd
         if (uart_cmd_cmp("reset", 5))
         {
-            Serial.println("reset");
             ESP.restart();
         }
         else if (uart_cmd_cmp("T", 1))
@@ -106,10 +116,81 @@ void uart_app_handler()
             Serial.printf("KI HIGH:%f\n", kiv_high);
             Serial.printf("KD:%f\n", kdv);
         }
+        else if (uart_cmd_cmp("get_id", 6))
+        {
+            uint8_t mac[6];
+            get_mac(mac);
+            Serial.printf("get_id_ok %02X-%02X-%02X-%02X-%02X-%02X\r\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+        }
+        else if (uart_cmd_cmp("get_sn", 6))
+        {
+            uint8_t sn[3];
+            get_sn(sn);
+            Serial.printf("get_sn_ok %02X-%02X-%02X-%02X-%02X-%02X\r\n", sn[0], sn[1], sn[2], sn[3], sn[4], sn[5]);
+        }
         else
         {
-            char buffer[24];
+            char buffer[36];
+            memset(buffer, 0, sizeof(buffer));
             uart_cmd_get_string(buffer);
+
+            if (memcmp(buffer, "set_sn", 6) == 0)
+            {
+                uint8_t sn[6] = {0, 0, 0, 0, 0, 0};
+
+                uint8_t cnt = 0;
+
+                for (size_t i = 6; i < 36; i++)
+                {
+                    if (buffer[i] >= '0' && buffer[i] <= '9')
+                    {
+                        char_to_sn_hex(sn, buffer[i] - 0x30, cnt++);
+                    }
+                    else if (buffer[i] >= 'A' && buffer[i] <= 'F')
+                    {
+                        char_to_sn_hex(sn, buffer[i] - 55, cnt++);
+                    }
+                    else if (buffer[i] >= 'a' && buffer[i] <= 'f')
+                    {
+                        char_to_sn_hex(sn, buffer[i] - 87, cnt++);
+                    }
+                    else
+                    {
+                        if (cnt & 1)
+                        {
+                            sn[cnt / 2] >>= 4;
+                            cnt++;
+                        }
+                    }
+                    if (cnt == 12)
+                        break;
+                    if (buffer[i] == 0)
+                        break;
+                }
+                if (cnt != 12)
+                {
+                    Serial.print("set_sn_err no_sn\r\n");
+                    delay(3000);
+                }
+                else
+                {
+                    if (eeprom.userdata_updata_user_key(sn))
+                    {
+                        Serial.print("set_sn_ok\r\n");
+                        Serial.print("set_sn_ok\r\n");
+                        delay(1000);
+                        ESP.restart();
+                    }
+                    else
+                    {
+                        Serial.print("set_sn_err sn_err\r\n");
+                        delay(3000);
+                    }
+                }
+                uart_cmd_clear();
+                return;
+            }
+
             Serial.printf("input cmd error, cmd:%s\n", buffer);
         }
 
