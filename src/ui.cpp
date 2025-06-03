@@ -104,7 +104,7 @@ static const char *menu3_option1_0[] = {"配置网络密匙", "配置網絡密�
 static const char *menu3_option1_1[] = {"请连接至热点", "請鏈接至熱點"};
 static const char *menu3_option1_2[] = {"QF_HP", "QF_HP"};
 
-static const char *menu5_option0_0[] = {"旋钮需停在刻度上", "旋钮需停在刻度上"};
+static const char *menu5_option0_0[] = {"无法开机时转转编码器重新插电试试", "無法開機時轉轉編碼器重新插電試試"};
 static const char *menu5_option0_1[] = {"只要微笑就好了", "只要微笑就好了"};
 
 static const char *menu6_option0_0[] = {"启凡科创QF-HP", "汎用恆溫加熱台"};
@@ -131,6 +131,7 @@ static const char *app_pid_option0_0[] = {"比例系数P:%02.1f", "比例係數P
 static const char *app_pid_option0_1[] = {"低温积分I:%02.1f", "低溫積分I:%02.1f"};
 static const char *app_pid_option0_2[] = {"高温积分I:%02.1f", "高溫積分I:%02.1f"};
 static const char *app_pid_option0_3[] = {"微分系数D:%02.1f", "微分係數D:%02.1f"};
+static const char *app_pid_option0_4[] = {"当前温度T:%d`", "當前溫度T:%d`"};
 static int8_t app_pid_option = 0; // 0: P 1: I 2: D
 
 /************************/
@@ -940,17 +941,17 @@ void UI::show_page(short x, short y, uint8_t page)
 
             if (user_datas.hardware_version == 0)
             {
-                if (user_datas.ui_style)
-                    oled.chinese(0, y + 8, menu5_option0_0[user_datas.ui_style], 16, 1, 0);
-                else
-                    oled.chinese(0, y + 8, menu5_option0_0[user_datas.ui_style], 16, 1, 0);
+                // if (user_datas.ui_style)
+                oled.chinese(0, y, menu5_option0_0[user_datas.ui_style], 16, 1, 1);
+                // else
+                //     oled.chinese(0, y, menu5_option0_0[user_datas.ui_style], 16, 1, 0);
             }
             else
             {
-                if (user_datas.ui_style)
-                    oled.chinese(8, y + 8, menu5_option0_1[user_datas.ui_style], 16, 1, 0);
-                else
-                    oled.chinese(8, y + 8, menu5_option0_1[user_datas.ui_style], 16, 1, 0);
+                // if (user_datas.ui_style)
+                oled.chinese(8, y + 8, menu5_option0_1[user_datas.ui_style], 16, 1, 0);
+                // else
+                //     oled.chinese(8, y + 8, menu5_option0_1[user_datas.ui_style], 16, 1, 0);
             }
 
             break;
@@ -994,20 +995,21 @@ void UI::show_page(short x, short y, uint8_t page)
         case pid_menu_num: // PID参数
             if (app_pid_option == 0)
             {
-                oled.printf(8, y + 8, 16, 1, 0, app_pid_option0_0[user_datas.ui_style], user_datas.kp);
+                oled.printf(8, y, 16, 1, 0, app_pid_option0_0[user_datas.ui_style], user_datas.kp);
             }
             else if (app_pid_option == 1)
             {
-                oled.printf(8, y + 8, 16, 1, 0, app_pid_option0_1[user_datas.ui_style], user_datas.ki);
+                oled.printf(8, y, 16, 1, 0, app_pid_option0_1[user_datas.ui_style], user_datas.ki);
             }
             else if (app_pid_option == 2)
             {
-                oled.printf(8, y + 8, 16, 1, 0, app_pid_option0_2[user_datas.ui_style], user_datas.kih);
+                oled.printf(8, y, 16, 1, 0, app_pid_option0_2[user_datas.ui_style], user_datas.kih);
             }
             else if (app_pid_option == 3)
             {
-                oled.printf(8, y + 8, 16, 1, 0, app_pid_option0_3[user_datas.ui_style], user_datas.kd);
+                oled.printf(8, y, 16, 1, 0, app_pid_option0_3[user_datas.ui_style], user_datas.kd);
             }
+            oled.printf(8, y + 16, 16, 1, 0, app_pid_option0_4[user_datas.ui_style], adc.now_temp);
             break;
 
         case about_menu_num: // 关于
@@ -1020,7 +1022,7 @@ void UI::show_page(short x, short y, uint8_t page)
             else
             {
                 oled.str(12, y, menu6_option0_0[user_datas.ui_style], 16, 1, 0); // 启凡科创
-                oled.printf(12, y+16, 16, 1, 0, menu6_option0_1[user_datas.ui_style], user_datas.hardware_version + 1);
+                oled.printf(12, y + 16, 16, 1, 0, menu6_option0_1[user_datas.ui_style], user_datas.hardware_version + 1);
             }
             break;
 

@@ -10,8 +10,8 @@ extern void get_mac(uint8_t *mac_ret);
 
 /*
   启凡科创QF-HP物联网加热台固件源码
-  版本:V1.64
-  日期:2024-4-23
+  版本:V2.4
+  日期:2025-4-21
 */
 static const uint8_t enc_iolist[][3] = {
     {5, 4, 2},
@@ -45,8 +45,7 @@ void setup()
   delay(1);
 
   pinMode(16, INPUT);
-  // delay(1);
-  os_delay_us(10);
+  os_delay_us(35);
   user_datas.hardware_version = digitalRead(16);
 
   pinMode(16, OUTPUT);
@@ -68,43 +67,8 @@ void setup()
   ui.page_switch_flg = true;
 }
 
-static uint8_t key_chek()
-{
-  static uint8_t en = 0;
-  if (en == 2)
-    return 1;
-  if (en == 1)
-    return 0;
-
-  uint8_t mac[6];
-  uint8_t key[6];
-  get_mac(mac);
-  qf_pass_key_get(mac, key, 6);
-
-  if (memcmp(key, user_datas.key, sizeof(key)) == 0)
-  {
-    en = 2;
-    return 1;
-  }
-  else
-  {
-    en = 1;
-    oled.chinese(24, 0, "请使用上位", 16, 1, 1);
-    oled.chinese(24, 16, "机激活设备", 16, 1, 1);
-    oled.refresh();
-  }
-  return 0;
-}
-
 void loop()
 {
-  if (key_chek() == 0)
-  {
-    while (Serial.available())
-      uart_cmd_get_byte(Serial.read());
-    uart_app_handler();
-    return;
-  }
   static uint16_t cnt = 0;
   cnt++;
   if (cnt == 0)
