@@ -6,7 +6,7 @@ user_datas_t user_datas;
 void user_datas_init()
 {
     user_datas.pwm_temp_buf = 100;
-    user_datas.pwm_temp_mode = 0;
+    user_datas.pwm_temp_mode = 1;  // 默认恒温模式
     user_datas.miot_miot_able = 0;
     user_datas.pwm_temp_mode1_time = 10;
     user_datas.ui_oled_light = 127;
