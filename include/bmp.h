@@ -352,4 +352,11 @@ const unsigned char less[] = {
 																									/* (16 X 30 )*/
 };
 
+// 度数符号位图用于温度显示 (8x8像素)
+const unsigned char temp_dot[] = {
+	8, 8,
+	0x38, 0x44, 0x44, 0x38, 0x00, 0x00, 0x00, 0x00,
+	/* 温度度数符号°(8 X 8) */
+};
+
 #endif

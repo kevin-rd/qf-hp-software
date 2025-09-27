@@ -31,6 +31,9 @@ static int8_t page2_move_tmp = 0;
 static int8_t page2_move_flg = 0;
 static user_datas_t user_datas_tmp;
 
+/*闪烁控制变量*/
+static uint8_t blink_counter = 0;   // 闪烁计数器
+
 extern void PWM_PID_SYNC();
 
 const char *page2_str_ptr[2][14] = {
@@ -1439,9 +1442,23 @@ void UI::show_temp(int8_t x, int8_t y, int8_t xx, int8_t yy)
     if (user_datas.pwm_temp_mode)
     {
         if (pwm.temp_reached_flg)
-            oled.num(xx, yy, temp_time_buf, 3, 16, RIGHT, 1);
+        {
+            // 显示时间时添加闪烁效果
+            blink_counter++;
+            if (blink_counter >= 40) blink_counter = 0; // 1秒闪烁周期(40*25ms)
+            
+            if (blink_counter < 20) // 前半周期显示，后半周期不显示
+            {
+                oled.num(xx, yy, temp_time_buf, 3, 16, RIGHT, 1);
+            }
+        }
         else
+        {
+            // 显示目标温度
             oled.num(xx, yy, user_datas.pwm_temp_buf, 3, 16, RIGHT, 1);
+            // 在数字右上角添加度数符号表示温度，更贴近数字
+            oled.BMP(xx, yy, temp_dot, 1);
+        }
     }
     else
         oled.num(xx, yy, tick_get_backflow_percent(), 3, 16, RIGHT, 1);
