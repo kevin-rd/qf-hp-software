@@ -865,7 +865,7 @@ void UI::show_page(short x, short y, uint8_t page)
         else
             oled.chinese(69, y, "恒温", 16, 1, 0);
         if (pwm.power)
-            oled.BMP(95, y + 2, 32, 28, heating, 1);
+            oled.BMP(95, y + 4, 32, 28, heating, 1);
 
         if (pwm.get_fan_sta())
         {
@@ -1208,7 +1208,7 @@ void UI::heat_move()
     if (pwm.power)
         y = 32;
     else
-        y = 2;
+        y = 4;
     oled.xy_set(0, 0, 128, 4);
     for (;;)
     {
@@ -1217,10 +1217,10 @@ void UI::heat_move()
         else
             y++;
         oled.choose_clr(101, 0, 26, 2);
-        oled.choose_clr(95, 2, 32, 2);
+        oled.choose_clr(95, 3, 32, 1);
         oled.BMP(95, y, 32, 28, heating, 1);
-        oled.choose_refresh(95, 0, 32, 4);
-        if (y == 2 || y == 32)
+        oled.choose_refresh(95, 3, 32, 1);
+        if (y == 4 || y == 32)
             return;
         yield();
     }
