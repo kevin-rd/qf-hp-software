@@ -301,7 +301,12 @@ void UI::page2_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面2�
             if (page2_menu_num == set_temp_time_menu_num || page2_menu_num == oled_light_menu_num || page2_menu_num == backflow_menu_num || page2_menu_num == pid_menu_num)
                 ec11.speed_up(true);
 
-            if (page2_menu_num == fan_set_menu_num)
+            if (page2_menu_num == temp_mode_menu_num)
+            {
+                // 温控模式：0=回流焊模式，1=恒温模式
+                set_var_tmp = user_datas.pwm_temp_mode;
+            }
+            else if (page2_menu_num == fan_set_menu_num)
                 set_var_tmp = user_datas.fan_auto_flg;
             else if (page2_menu_num == resume_factory_menu_num)
                 set_var_tmp = 0;
@@ -361,7 +366,6 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
     {
         if (ec_value == sw_click) // 单击
         {
-
             if (page2_menu_num == backflow_menu_num)
             {
                 if (!page3_switch_flg)
@@ -451,9 +455,16 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
 
             if (page2_menu_num == temp_mode_menu_num)
             {
+                // 保存温控模式设置
+                user_datas.pwm_temp_mode = set_var_tmp;
+                
                 if (pwm.power)
                     pwm.end();
-                page3_push_back();
+                
+                // 直接返回到主页面（page 0 或 page 1），而不是菜单页
+                switch_buf = back;
+                page_switch_flg = 1;
+                page_num = 2;  // 当前在page 3，设置为2后back会到page 1
                 return;
             }
 
@@ -475,8 +486,8 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
             }
             return;
         }
-        // 长按、双击
 
+        // 长按、双击
         if (wifima.wifima_flg)
         {
             wifima.back_flg = 1;
@@ -525,8 +536,8 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
     switch (page2_menu_num)
     {
     case temp_mode_menu_num: // 温控模式
-        if (!page3_switch_flg)
-            user_datas.pwm_temp_mode = !user_datas.pwm_temp_mode;
+        set_var_tmp = !set_var_tmp;
+        circle_move_buf = set_var_tmp | 0x2;
         break;
 
     case backflow_menu_num: // 回流参数
@@ -670,7 +681,7 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
         break;
         return;
     }
-    if (page2_menu_num == temp_mode_menu_num || page2_menu_num == iot_menu_num)
+    if (page2_menu_num == iot_menu_num)
     {
         page3_switch_flg = ec_value;
         return;
@@ -870,10 +881,12 @@ void UI::show_page(short x, short y, uint8_t page)
         switch (page2_menu_num)
         {
         case temp_mode_menu_num: // 模式设置
-            if (user_datas.pwm_temp_mode)
-                oled.chinese(32, y + 8, menu0_option1[user_datas.ui_style], 16, 1, 0);
+            oled.chinese(0, y, menu0_option0[user_datas.ui_style], 16, 1, 0);
+            oled.chinese(0, y + 16, menu0_option1[user_datas.ui_style], 16, 1, 0);
+            if (set_var_tmp == 1)
+                oled.BMP(118, y + 20, circle_kong);
             else
-                oled.chinese(24, y + 8, menu0_option0[user_datas.ui_style], 16, 1, 0);
+                oled.BMP(118, y + 4, circle_kong);
             break;
 
         case backflow_menu_num: // 回流曲线
