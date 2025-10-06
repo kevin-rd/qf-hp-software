@@ -14,9 +14,7 @@ typedef enum
     oled_light_menu_num,     // 屏幕亮度
     fan_set_menu_num,        // 风扇设置
     enc_mode_menu_num,       // 旋转方向
-    ui_style_menu_num,       // 界面风格
     pid_menu_num,            // 参数整定
-    use_menu_num,            // 使用说明
     resume_factory_menu_num, // 恢复出厂
     about_menu_num,          // 关于
     back_menu_num,           // 返回
@@ -36,7 +34,7 @@ static uint8_t blink_counter = 0;   // 闪烁计数器
 
 extern void PWM_PID_SYNC();
 
-const char *page2_str_ptr[2][14] = {
+const char *page2_str_ptr[2][12] = {
     {"温控模式",
      "回流参数",
      "恒温参数",
@@ -45,9 +43,7 @@ const char *page2_str_ptr[2][14] = {
      "屏幕亮度",
      "风扇设置",
      "旋转方向",
-     "界面风格",
      "参数整定",
-     "使用说明",
      "恢复出厂",
      "关于",
      "返回"},
@@ -59,9 +55,7 @@ const char *page2_str_ptr[2][14] = {
      "屏幕亮度",
      "風扇設置",
      "旋轉方向",
-     "界面風格",
      "參數整定",
-     "使用說明",
      "恢復出廠",
      "關於",
      "返回"}
@@ -77,9 +71,7 @@ const unsigned char *page2_bmp_ptr[] = {
     page2_bmp_light,
     page2_bmp_fan,
     page2_bmp_enc_rotation,
-    page2_bmp_ui_style,
     page2_bmp_pid,
-    page2_bmp_useinfo,
     page2_bmp_factory,
     page2_bmp_about,
     page2_bmp_back};
@@ -107,9 +99,6 @@ static const char *menu3_option1_0[] = {"配置网络密匙", "配置網絡密�
 static const char *menu3_option1_1[] = {"请连接至热点", "請鏈接至熱點"};
 static const char *menu3_option1_2[] = {"QF_HP", "QF_HP"};
 
-static const char *menu5_option0_0[] = {"无法开机时转转编码器重新插电试试", "無法開機時轉轉編碼器重新插電試試"};
-static const char *menu5_option0_1[] = {"只要微笑就好了", "只要微笑就好了"};
-
 static const char *menu6_option0_0[] = {"启凡科创QF-HP", "汎用恆溫加熱台"};
 static const char *menu6_option0_1[] = {"SV:" HP_SOFTWARE_VERSION " HV:%1d.0", "量產機", "02"};
 
@@ -126,9 +115,6 @@ static const char *app_factory_option0_0[] = {"恢复出厂设置", "恢復出�
 
 static const char *app_enc_rotation_option0_0[] = {"正向滚动", "正向滾動"};
 static const char *app_enc_rotation_option0_1[] = {"反向滚动", "反向滾動"};
-
-static const char *app_ui_style_option0_0[] = {"官方默认风格"};
-static const char *app_ui_style_option0_1[] = {"找羊初號機"};
 
 static const char *app_pid_option0_0[] = {"比例系数P:%02.1f", "比例係數P:%02.1f"};
 static const char *app_pid_option0_1[] = {"低温积分I:%02.1f", "低溫積分I:%02.1f"};
@@ -326,13 +312,6 @@ void UI::page2_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面2�
                 else
                     set_var_tmp = 0;
             }
-            else if (page2_menu_num == ui_style_menu_num)
-            {
-                if (user_datas.ui_style == UI_STYLE_QFTEK)
-                    set_var_tmp = 1;
-                else
-                    set_var_tmp = 0;
-            }
             else if (page2_menu_num == pid_menu_num)
             {
                 app_pid_option = 0;
@@ -470,19 +449,6 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
                 return;
             }
 
-            if (page2_menu_num == ui_style_menu_num)
-            {
-
-                if (set_var_tmp == 1)
-                    user_datas.ui_style = UI_STYLE_QFTEK;
-                else
-                    user_datas.ui_style = UI_STYLE_ZHAOYANG;
-
-                page3_push_back();
-
-                return;
-            }
-
             if (page2_menu_num == temp_mode_menu_num)
             {
                 if (pwm.power)
@@ -502,7 +468,6 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
             if (page2_menu_num == fan_set_menu_num ||
                 page2_menu_num == set_temp_time_menu_num ||
                 page2_menu_num == oled_light_menu_num ||
-                page2_menu_num == use_menu_num ||
                 page2_menu_num == resume_factory_menu_num ||
                 page2_menu_num == about_menu_num)
             {
@@ -638,11 +603,6 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
         break;
 
     case resume_factory_menu_num:
-        set_var_tmp = !set_var_tmp;
-        circle_move_buf = set_var_tmp | 0x2;
-        break;
-
-    case ui_style_menu_num:
         set_var_tmp = !set_var_tmp;
         circle_move_buf = set_var_tmp | 0x2;
         break;
@@ -964,25 +924,6 @@ void UI::show_page(short x, short y, uint8_t page)
             ui.show_temp_mode = mode_tmp;
             break;
 
-        case use_menu_num: // 使用说明
-
-            if (user_datas.hardware_version == 0)
-            {
-                // if (user_datas.ui_style)
-                oled.chinese(0, y, menu5_option0_0[user_datas.ui_style], 16, 1, 1);
-                // else
-                //     oled.chinese(0, y, menu5_option0_0[user_datas.ui_style], 16, 1, 0);
-            }
-            else
-            {
-                // if (user_datas.ui_style)
-                oled.chinese(8, y + 8, menu5_option0_1[user_datas.ui_style], 16, 1, 0);
-                // else
-                //     oled.chinese(8, y + 8, menu5_option0_1[user_datas.ui_style], 16, 1, 0);
-            }
-
-            break;
-
         case fan_set_menu_num: // 风扇设置
             oled.chinese(0, y, app_fan_option0_0[user_datas.ui_style], 16, 1, 0);
             oled.chinese(0, y + 16, app_fan_option0_1[user_datas.ui_style], 16, 1, 0);
@@ -1004,15 +945,6 @@ void UI::show_page(short x, short y, uint8_t page)
         case enc_mode_menu_num: // 编码器方向
             oled.chinese(0, y, app_enc_rotation_option0_0[user_datas.ui_style], 16, 1, 0);
             oled.chinese(0, y + 16, app_enc_rotation_option0_1[user_datas.ui_style], 16, 1, 0);
-            if (set_var_tmp == 1)
-                oled.BMP(118, y + 4, circle_kong);
-            else
-                oled.BMP(118, y + 20, circle_kong);
-            break;
-
-        case ui_style_menu_num: // 界面风格
-            oled.chinese(0, y, app_ui_style_option0_0[0], 16, 1, 0);
-            oled.chinese(0, y + 16, app_ui_style_option0_1[0], 16, 1, 0);
             if (set_var_tmp == 1)
                 oled.BMP(118, y + 4, circle_kong);
             else
