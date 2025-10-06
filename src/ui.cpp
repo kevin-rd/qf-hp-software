@@ -147,8 +147,10 @@ void UI::run_task()
 
     wake_sleep_page();
 
-    if (oled_sleep_flg)
+    if (oled_sleep_flg){
         return;
+    }
+
     switch (page_num)
     {
     case 1:
@@ -877,11 +879,33 @@ void UI::show_page(short x, short y, uint8_t page)
         }
         break;
     case 2:
-
+    {
         oled.xy_set(0, 0, 128, 4);
+        
+        // 显示当前菜单项
         oled.chinese(64 - 12, y + 8, page2_str_ptr[user_datas.ui_style][page2_menu_num], 16, 1, 0);
         oled.BMP(y, page2_bmp_ptr[page2_menu_num]);
+        
+        // 左侧进度条指示器（只在页面完全可见时绘制，避免切换时的残留）
+        if (y == 0)  // 只在页面完全显示时绘制进度条
+        {
+            // 绘制进度条背景轨道（竖线）
+            oled.line(2, 2, 1, 28, 1);  // x=2, y=2到y=30, 宽度1像素, 高度28像素
+            
+            // 计算当前位置的指示器位置
+            // 总菜单项数：page2_menu_num_max
+            // 当前索引：page2_menu_num
+            // 可用高度：28像素（从y=2到y=30）
+            uint8_t indicator_height = 4;  // 指示器高度
+            uint8_t track_height = 28 - indicator_height;  // 可移动范围
+            uint8_t indicator_y = 2 + (page2_menu_num * track_height) / (page2_menu_num_max - 1);
+            
+            // 绘制位置指示器（实心矩形）
+            oled.line(1, indicator_y, 3, indicator_height, 1);  // x=1, 宽度3像素
+        }
+        
         break;
+    }
     case 3:
         switch (page2_menu_num)
         {
@@ -996,6 +1020,7 @@ void UI::show_page(short x, short y, uint8_t page)
             break;
 
         case pid_menu_num: // PID参数
+        {
             if (app_pid_option == 0)
             {
                 oled.printf(8, y, 16, 1, 0, app_pid_option0_0[user_datas.ui_style], user_datas.kp);
@@ -1013,7 +1038,19 @@ void UI::show_page(short x, short y, uint8_t page)
                 oled.printf(8, y, 16, 1, 0, app_pid_option0_3[user_datas.ui_style], user_datas.kd);
             }
             oled.printf(8, y + 16, 16, 1, 0, app_pid_option0_4[user_datas.ui_style], adc.now_temp);
+            
+            // 左侧进度条指示器 - 显示当前PID参数项位置（只在页面完全可见时绘制）
+            if (y == 0)  // 只在页面完全显示时绘制进度条
+            {
+                oled.line(2, 2, 1, 28, 1);  // 进度条轨道
+                uint8_t pid_indicator_height = 4;
+                uint8_t pid_track_height = 28 - pid_indicator_height;
+                uint8_t pid_indicator_y = 2 + (app_pid_option * pid_track_height) / 3;  // 4个选项(0-3)
+                oled.line(1, pid_indicator_y, 3, pid_indicator_height, 1);  // 进度条指示器
+            }
+            
             break;
+        }
 
         case about_menu_num: // 关于
             if (user_datas.ui_style)
@@ -1177,11 +1214,19 @@ void UI::page2_move()
         if (now_y < -32 || now_y > 32)
             break;
         oled.clr();
+        
+        // 绘制移动的菜单项
         oled.chinese(64 - 12, now_y + 8, page2_str_ptr[user_datas.ui_style][page2_menu_num], 16, 1, 0);
         oled.BMP(now_y, page2_bmp_ptr[page2_menu_num]);
-
         oled.chinese(64 - 12, next_y + 8, page2_str_ptr[user_datas.ui_style][num_tmp], 16, 1, 0);
         oled.BMP(next_y, page2_bmp_ptr[num_tmp]);
+        
+        // 绘制进度条（显示目标位置，避免闪烁）
+        oled.line(2, 2, 1, 28, 1);  // 进度条轨道
+        uint8_t indicator_height = 4;
+        uint8_t track_height = 28 - indicator_height;
+        uint8_t indicator_y = 2 + (num_tmp * track_height) / (page2_menu_num_max - 1);
+        oled.line(1, indicator_y, 3, indicator_height, 1);  // 进度条指示器
 
         oled.refresh();
         yield();
