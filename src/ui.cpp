@@ -16,7 +16,6 @@ typedef enum
     enc_mode_menu_num,       // 旋转方向
     pid_menu_num,            // 参数整定
     resume_factory_menu_num, // 恢复出厂
-    about_menu_num,          // 关于
     back_menu_num,           // 返回
     page2_menu_num_max
 } page2_menu_num_type;
@@ -34,7 +33,7 @@ static uint8_t blink_counter = 0;   // 闪烁计数器
 
 extern void PWM_PID_SYNC();
 
-const char *page2_str_ptr[2][12] = {
+const char *page2_str_ptr[2][11] = {
     {"温控模式",
      "回流参数",
      "恒温参数",
@@ -45,7 +44,6 @@ const char *page2_str_ptr[2][12] = {
      "旋转方向",
      "参数整定",
      "恢复出厂",
-     "关于",
      "返回"},
     {"溫控模式",
      "回流參數",
@@ -57,7 +55,6 @@ const char *page2_str_ptr[2][12] = {
      "旋轉方向",
      "參數整定",
      "恢復出廠",
-     "關於",
      "返回"}
 
 };
@@ -73,7 +70,6 @@ const unsigned char *page2_bmp_ptr[] = {
     page2_bmp_enc_rotation,
     page2_bmp_pid,
     page2_bmp_factory,
-    page2_bmp_about,
     page2_bmp_back};
 /************************/
 
@@ -98,9 +94,6 @@ static const char *menu3_option0_1[] = {"功能已开启", "功能已開啟"};
 static const char *menu3_option1_0[] = {"配置网络密匙", "配置網絡密匙"};
 static const char *menu3_option1_1[] = {"请连接至热点", "請鏈接至熱點"};
 static const char *menu3_option1_2[] = {"QF_HP", "QF_HP"};
-
-static const char *menu6_option0_0[] = {"启凡科创QF-HP", "汎用恆溫加熱台"};
-static const char *menu6_option0_1[] = {"SV:" HP_SOFTWARE_VERSION " HV:%1d.0", "量產機", "02"};
 
 static const char *menu7_option0_0[] = {"标称温度", "標準溫度"};
 static const char *menu7_option0_1[] = {"自动校准", "自動校準"};
@@ -477,8 +470,7 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
             if (page2_menu_num == fan_set_menu_num ||
                 page2_menu_num == set_temp_time_menu_num ||
                 page2_menu_num == oled_light_menu_num ||
-                page2_menu_num == resume_factory_menu_num ||
-                page2_menu_num == about_menu_num)
+                page2_menu_num == resume_factory_menu_num)
             {
                 page3_push_back();
             }
@@ -996,20 +988,6 @@ void UI::show_page(short x, short y, uint8_t page)
             
             break;
         }
-
-        case about_menu_num: // 关于
-            if (user_datas.ui_style)
-            {
-                oled.chinese(8, y, menu6_option0_0[user_datas.ui_style], 16, 1, 1);
-                oled.chinese(28, y + 16, menu6_option0_1[user_datas.ui_style], 16, 1, 0);
-                oled.str(84, y + 16, menu6_option0_1[user_datas.ui_style + 1], 16, 1, 0);
-            }
-            else
-            {
-                oled.str(12, y, menu6_option0_0[user_datas.ui_style], 16, 1, 0); // 启凡科创
-                oled.printf(12, y + 16, 16, 1, 0, menu6_option0_1[user_datas.ui_style], user_datas.hardware_version + 1);
-            }
-            break;
 
         case error_temp_fix_num: // 温度校准
 
