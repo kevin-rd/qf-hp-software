@@ -455,9 +455,7 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
 
             if (page2_menu_num == temp_mode_menu_num)
             {
-                // 保存温控模式设置
-                user_datas.pwm_temp_mode = set_var_tmp;
-                
+                // 温控模式已经在切换时实时保存，这里只需处理返回
                 if (pwm.power)
                     pwm.end();
                 
@@ -529,15 +527,16 @@ void UI::page3_key(ec11_task_result_type ec_type, int16_t ec_value) // 界面3�
 
         return;
     }
-    // 编码器事件
 
+    // 编码器事件
     float tmp_f = ec_value;
 
     switch (page2_menu_num)
     {
     case temp_mode_menu_num: // 温控模式
-        set_var_tmp = !set_var_tmp;
-        circle_move_buf = set_var_tmp | 0x2;
+        user_datas.pwm_temp_mode = !user_datas.pwm_temp_mode;
+        set_var_tmp = user_datas.pwm_temp_mode;  // 同步到临时变量用于显示
+        circle_move_buf = user_datas.pwm_temp_mode | 0x2;
         break;
 
     case backflow_menu_num: // 回流参数
@@ -881,12 +880,13 @@ void UI::show_page(short x, short y, uint8_t page)
         switch (page2_menu_num)
         {
         case temp_mode_menu_num: // 模式设置
-            oled.chinese(0, y, menu0_option0[user_datas.ui_style], 16, 1, 0);
-            oled.chinese(0, y + 16, menu0_option1[user_datas.ui_style], 16, 1, 0);
+            // 调整显示顺序，让值1对应上方，值0对应下方
+            oled.chinese(0, y, menu0_option1[user_datas.ui_style], 16, 1, 0);      // 恒温（上方）
+            oled.chinese(0, y + 16, menu0_option0[user_datas.ui_style], 16, 1, 0); // 回流焊（下方）
             if (set_var_tmp == 1)
-                oled.BMP(118, y + 20, circle_kong);
+                oled.BMP(118, y + 4, circle_kong);   // 值1在上方（恒温）
             else
-                oled.BMP(118, y + 4, circle_kong);
+                oled.BMP(118, y + 20, circle_kong);  // 值0在下方（回流焊）
             break;
 
         case backflow_menu_num: // 回流曲线
@@ -1245,21 +1245,43 @@ void UI::choose_options_move()
 {
     if ((circle_move_buf & 0x2) == 0)
         return;
-    uint8_t tmp;
-    if (circle_move_buf == 0x2)
-        tmp = 4;
-    else
-        tmp = 20;
-    for (uint8_t x = 1; x < 17; x++)
+    
+    int8_t start_y, end_y;
+    if (circle_move_buf == 0x2)  // 新值为0
     {
+        start_y = 4;   // 从上
+        end_y = 20;    // 到下
+    }
+    else  // 新值为1
+    {
+        start_y = 20;  // 从下
+        end_y = 4;     // 到上
+    }
+    
+    // 使用缓动动画，移动距离16像素，使用12帧
+    const uint8_t frames = 12;
+    int8_t distance = end_y - start_y;  // 可能是正数或负数
+    
+    for (uint8_t i = 0; i <= frames; i++)
+    {
+        // 使用整数运算的缓动函数
+        // progress_256 是进度的256倍（0-256），用于避免浮点运算
+        uint16_t progress_256 = (i * 256) / frames;
+        
+        // ease-in-out 缓动曲线（整数版本）
+        uint16_t eased_256;
+        if (progress_256 < 128)  // 前半段加速
+            eased_256 = (progress_256 * progress_256) / 128;
+        else  // 后半段减速
+            eased_256 = 256 - ((256 - progress_256) * (256 - progress_256)) / 128;
+        
+        // 计算当前位置
+        int8_t current_y = start_y + (distance * (int16_t)eased_256) / 256;
+        
         oled.choose_clr(118, 0, 9, 4);
-        oled.BMP(118, tmp, circle_kong);
+        oled.BMP(118, current_y, circle_kong);
         oled.choose_refresh(118, 0, 9, 4);
-        if (circle_move_buf == 0x2)
-            tmp++;
-        else
-            tmp--;
-        delay(10);
+        delay(12);  // 总时长约144ms
     }
     circle_move_buf = 0;
 }
