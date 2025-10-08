@@ -1067,6 +1067,25 @@ void UI::page3_switch()
     if (!page3_switch_flg)
         return;
     int8_t y;
+    
+    // 计算参数整定进度条的起始和目标位置
+    static int8_t last_pid_option = 0;  // 记录上一次的选项
+    int8_t progress_start_y = 0, progress_end_y = 0;
+    bool draw_progress = false;
+    
+    if (page2_menu_num == pid_menu_num)
+    {
+        draw_progress = true;
+        
+        // 计算进度条位置
+        uint8_t indicator_height = 4;
+        uint8_t track_height = 28 - indicator_height;
+        progress_start_y = 2 + (last_pid_option * track_height) / 3;
+        progress_end_y = 2 + (app_pid_option * track_height) / 3;
+        
+        // 更新记录
+        last_pid_option = app_pid_option;
+    }
 
     if (page3_switch_flg < 0)
     {
@@ -1082,17 +1101,34 @@ void UI::page3_switch()
         y = 32;
     }
 
+    int8_t total_frames = abs(y);  // 总帧数（32帧）
+    int8_t current_frame = 0;
+    
     for (;;)
     {
         if (y == 0)
             break;
         oled.clr();
         show_page(0, y, 3);
+        
+        // 绘制平滑移动的进度条（仅参数整定页面，使用简单线性过渡）
+        if (draw_progress)
+        {
+            // 简单线性插值，计算当前进度条位置
+            int8_t progress_distance = progress_end_y - progress_start_y;
+            int8_t current_progress_y = progress_start_y + (progress_distance * current_frame) / total_frames;
+            
+            // 只绘制进度条轨道和移动中的滑块，避免与静态显示冲突
+            oled.line(2, 2, 1, 28, 1);  // 轨道
+            oled.line(1, current_progress_y, 3, 4, 1);  // 滑块
+        }
+        
         oled.refresh();
         if (y < 0)
             y++;
         else
             y--;
+        current_frame++;
         yield();
     }
 
