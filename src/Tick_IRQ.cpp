@@ -167,11 +167,11 @@ void ms50_tic()
 void ms100_tic()
 {
 
-  if (eeprom.write_t < 21)
+  if (eeprom.write_t < 11)
   {
     eeprom.write_t++;
 
-    if (eeprom.write_t == 20)
+    if (eeprom.write_t == 10)
     {
       if (eeprom.write_flg)
         eeprom.write_flg = 2;
